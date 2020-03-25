@@ -30,6 +30,7 @@
                     name="name"
                     prepend-icon="mdi-account"
                     type="text"
+                    required
                   />
                     <v-text-field
                     v-model="user.phone"
@@ -37,6 +38,7 @@
                     name="phone"
                     prepend-icon="mdi-phone"
                     type="number"
+                    required
                   />
                   <v-text-field
                     v-model="user.email"
@@ -44,6 +46,7 @@
                     name="email"
                     prepend-icon="mdi-email"
                     type="text"
+                    required
                   />
 
                   <v-text-field
@@ -53,6 +56,7 @@
                     name="password"
                     prepend-icon="mdi-lock"
                     type="password"
+                    required
                   />
                 </v-form>
               </v-card-text>

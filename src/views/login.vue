@@ -25,26 +25,28 @@
               <v-card-text>
                 <v-form>
                   <v-text-field
-                    v-model="user.email"
+                    v-model="loginDetails.email"
                     label="Email"
                     name="email"
                     prepend-icon="mdi-email"
                     type="text"
+                    required
                   />
 
                   <v-text-field
-                    v-model="user.password"
+                    v-model="loginDetails.password"
                     id="password"
                     label="Password"
                     name="password"
                     prepend-icon="mdi-lock"
                     type="password"
+                    required
                   />
                 </v-form>
               </v-card-text>
               <v-card-actions>
                 <v-spacer />
-                <v-btn color="button" class="white--text">Login</v-btn>
+                <v-btn color="button" class="white--text" @click="logIn()">Login</v-btn>
               </v-card-actions>
             </v-card>
             <br>
@@ -58,14 +60,22 @@
 </template>
 
 <script>
+
+
 export default {
   data() {
     return {
-      user: {
+      loginDetails: {
         email: '',
         password: '',
       },
+      showLoader: false,
     };
+  },
+  methods: {
+    logIn() {
+      this.$router.push('/home');
+    },
   },
 };
 </script>
