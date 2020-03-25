@@ -1,5 +1,7 @@
 <template>
-  <v-container>Welcome Home</v-container>
+  <v-container>
+    Signup Page
+  </v-container>
 </template>
 
 <script>
