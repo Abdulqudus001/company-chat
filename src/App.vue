@@ -17,9 +17,9 @@
         </v-list-item-content>
       </v-list-item>
       <v-list :class="$vuetify.theme.dark ? '' : 'text--white'" class="my-4">
-        <v-list-item class="mb-4">
+        <v-list-item class="mb-3">
           <v-list-item-content>
-            <v-list-item-title>Add channel</v-list-item-title>
+            <v-list-item-title class="font-weight-bold">Channels</v-list-item-title>
           </v-list-item-content>
           <v-list-item-icon>
             <v-icon
@@ -28,7 +28,7 @@
             >mdi-plus-circle-outline</v-icon>
           </v-list-item-icon>
         </v-list-item>
-        <v-list-item v-for="item in navItems" :key="item.name">
+        <v-list-item v-for="item in navItems" :key="item.name" :to="item.link">
           <v-list-item-icon>
             <v-icon
               size="18"
@@ -152,18 +152,22 @@ export default {
       {
         name: 'announcement',
         type: 'private',
+        link: '/channels/announcement',
       },
       {
         name: 'random',
         type: 'public',
+        link: '/channels/random',
       },
       {
         name: 'software-development',
         type: 'private',
+        link: '/channels/software-development',
       },
       {
         name: 'polls',
         type: 'public',
+        link: '/channels/polls',
       },
     ],
     showDialog: false,
