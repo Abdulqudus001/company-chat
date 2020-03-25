@@ -1,7 +1,7 @@
 <template>
   <v-app :style="{background: $vuetify.theme.themes[theme].background}">
     <v-navigation-drawer
-      v-if="$route.name === 'Home'"
+      v-if="$route.name !== 'login' && $route.name !== 'signup'"
       color="sidebar"
       app
     >
@@ -48,14 +48,21 @@
       </v-list>
     </v-navigation-drawer>
     <v-app-bar
-      v-if="$route.name === 'Home'"
+      v-if="$route.name !== 'login' && $route.name !== 'signup'"
       app
       elevation="1"
       color="bars"
     >
       <v-list-item>
         <v-list-item-content>
-          <v-list-item-title class="font-weight-bold">#software-development</v-list-item-title>
+          <v-list-item-title
+            class="font-weight-bold"
+            v-if="$route.name == 'Home'"
+          >Home</v-list-item-title>
+          <v-list-item-title
+            class="font-weight-bold"
+            v-else
+          >#{{ $route.params.channel }}</v-list-item-title>
           <v-list-item-subtitle>
             <v-layout>
               <v-tooltip bottom>
