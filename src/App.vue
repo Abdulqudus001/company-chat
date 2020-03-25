@@ -22,7 +22,10 @@
             <v-list-item-title>Add channel</v-list-item-title>
           </v-list-item-content>
           <v-list-item-icon>
-            <v-icon color="rgba(255, 255, 255, 0.712)">mdi-plus-circle-outline</v-icon>
+            <v-icon
+              color="rgba(255, 255, 255, 0.712)"
+              @click="showDialog = true"
+            >mdi-plus-circle-outline</v-icon>
           </v-list-item-icon>
         </v-list-item>
         <v-list-item v-for="item in navItems" :key="item.name">
@@ -128,16 +131,18 @@
       </v-tooltip>
     </v-app-bar>
     <v-content>
+      <new-channel @closeDialog="showDialog = false" :showDialog="showDialog" />
       <router-view />
     </v-content>
   </v-app>
 </template>
 
 <script>
+import NewChannel from '@/components/newChannel.vue';
 
 export default {
   name: 'App',
-
+  components: { NewChannel },
   data: () => ({
     starHovered: false,
     starClicked: false,
@@ -161,6 +166,7 @@ export default {
         type: 'public',
       },
     ],
+    showDialog: false,
   }),
   computed: {
     theme() {
