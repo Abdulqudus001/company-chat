@@ -16,17 +16,17 @@
 
         <v-card-text>
           <v-text-field
-            placeholder="Name"
+            placeholder="Football"
             class="my-3"
-            label="Football"
-            v-model="name"
+            label="Name"
+            v-model="channelDetails.channelName"
           ></v-text-field>
           <v-text-field
             placeholder="Discuss football matters"
             class="my-3"
             label="Description(optional)"
             messages="What’s this channel about?"
-            v-model="desc"
+            v-model="channelDetails.channelDescription"
           ></v-text-field>
 
           <v-layout align-center>
@@ -40,7 +40,9 @@
             </v-list-item>
             <v-spacer />
             <v-switch
-              v-model="isPrivate"
+              v-model="channelDetails.channelPrivate"
+              true-value="1"
+              false-value="0"
               inset
               :color="$vuetify.theme.dark ? '#fff' : '#1d3557'"
             ></v-switch>
@@ -51,7 +53,9 @@
             <v-btn
               :color="$vuetify.theme.dark ? 'background' : 'button'"
               class="white--text"
-              :disabled="name.length < 1"
+              :loading="loading"
+              :disabled="channelDetails.channelName.length < 1"
+              @click="createChannel"
             >Create</v-btn>
           </v-layout>
         </v-card-text>
@@ -61,14 +65,22 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
+
 export default {
   data: () => ({
-    isPrivate: false,
-    name: '',
-    desc: '',
+    loading: false,
+    channelDetails: {
+      channelName: '',
+      channelDescription: '',
+      channelPrivate: 0,
+    },
   }),
-  mounted() {
-    this.$store.dispatch('fetchChannels');
+  mounted() {},
+  computed: {
+    ...mapGetters([
+      'getChannels',
+    ]),
   },
 };
 </script>

@@ -6,9 +6,11 @@ import App from './App.vue';
 import router from './router';
 import store from './store';
 import vuetify from './plugins/vuetify';
+import mixins from './mixins/createChannel';
 
 Vue.use(VeeValidate);
 Vue.use(VueAxios, axios);
+Vue.mixin(mixins);
 
 Vue.config.productionTip = false;
 

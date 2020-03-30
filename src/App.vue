@@ -28,12 +28,16 @@
             >mdi-plus-circle-outline</v-icon>
           </v-list-item-icon>
         </v-list-item>
-        <v-list-item v-for="item in navItems" :key="item.name" :to="item.link">
+        <v-list-item
+          v-for="item in getChannels"
+          :key="item.channelName"
+          :to="'/channels/' + item.channelId"
+        >
           <v-list-item-icon>
             <v-icon
               size="18"
               color="rgba(255, 255, 255, 0.712)"
-              v-if="item.type == 'private'"
+              v-if="item.channelPrivate"
             >mdi-lock</v-icon>
             <v-icon
               size="18"
@@ -42,7 +46,7 @@
             >mdi-pound</v-icon>
           </v-list-item-icon>
           <v-list-item-content>
-            <v-list-item-subtitle>{{ item.name }}</v-list-item-subtitle>
+            <v-list-item-subtitle>{{ item.channelName }}</v-list-item-subtitle>
           </v-list-item-content>
         </v-list-item>
       </v-list>
@@ -146,6 +150,7 @@
 
 <script>
 import NewChannel from '@/components/newChannel.vue';
+import { mapGetters } from 'vuex';
 
 export default {
   name: 'App',
@@ -179,7 +184,14 @@ export default {
     ],
     showDialog: false,
   }),
+  mounted() {
+    this.axios.defaults.headers.common.Authorization = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFiZHVscXVkdXNhYnViYWtyZUBnbWFpbC5jb20iLCJ1c2VySWQiOiI1ZTgxYWQ5M2ZiNGYxODAwMjRkZjIzN2EiLCJpYXQiOjE1ODU1NTY4ODN9.d_ysYaeAZqk-97F8P4ceihFXljhbxwRignuSGBeMHAo';
+    this.$store.dispatch('fetchChannels');
+  },
   computed: {
+    ...mapGetters([
+      'getChannels',
+    ]),
     theme() {
       return (this.$vuetify.theme.dark) ? 'dark' : 'light';
     },
