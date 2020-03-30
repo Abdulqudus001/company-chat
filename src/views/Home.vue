@@ -67,6 +67,9 @@ export default {
     name: '',
     desc: '',
   }),
+  mounted() {
+    this.$store.dispatch('fetchChannels');
+  },
 };
 </script>
 
