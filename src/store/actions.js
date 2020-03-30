@@ -1,6 +1,11 @@
 import axios from 'axios';
-
+import Vue from 'vue';
 export default {
+  fetchChannels({ commit }) {
+    Vue.axios.get('https://fierce-sierra-17373.herokuapp.com/channels').then(({ data }) => {
+      commit('updateChannels', data.allChannels);
+    });
+  },
   login({ commit }, user) {
     return new Promise((resolve, reject) => {
       commit('auth_request');
@@ -49,8 +54,5 @@ export default {
       delete axios.defaults.headers.common.Authorization;
       resolve();
     });
-  },
-  fetchChannels() {
-
   },
 };
