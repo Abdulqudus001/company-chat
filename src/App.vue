@@ -183,9 +183,19 @@ export default {
     theme() {
       return (this.$vuetify.theme.dark) ? 'dark' : 'light';
     },
+    isLoggedIn() {
+      return this.$store.getters.isLoggedIn;
+    },
   },
   created() {
     this.$vuetify.theme.dark = true;
+  },
+  methods: {
+    logout() {
+      this.$store.dispatch('logout').then(() => {
+        this.$router.push('/login');
+      });
+    },
   },
 };
 </script>

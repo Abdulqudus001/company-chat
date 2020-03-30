@@ -61,7 +61,7 @@
             </v-card-text>
             <v-card-actions>
               <v-spacer />
-              <v-btn color="button" class="white--text">Sign Up</v-btn>
+              <v-btn color="button" class="white--text" @click="register()">Sign Up</v-btn>
             </v-card-actions>
           </v-card>
           <br>
@@ -84,6 +84,20 @@ export default {
         phone: '',
       },
     };
+  },
+  methods: {
+    register() {
+      const data = {
+        fullName: this.user.fullname,
+        phone: this.user.phone,
+        email: this.user.email,
+        password: this.user.password,
+      };
+      this.$store
+        .dispatch('register', data)
+        .then(() => this.$router.push('/'))
+        .catch((err) => console.log(err));
+    },
   },
 };
 </script>
