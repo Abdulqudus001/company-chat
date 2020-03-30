@@ -4,16 +4,16 @@
       <v-list-item-content>
         <v-list-item-title class="display-1 font-weight-bold">
           <v-icon :color="$vuetify.theme.dark ? '#fff' : '#000'">mdi-lock</v-icon>
-          {{ $route.params.channel }}
+          {{ getChannel.channelName }}
         </v-list-item-title>
         <v-list-item-subtitle
           class="subtitle-1 my-3"
           :class="$vuetify.theme.dark ? 'white--text' : '#000'"
         >
-          <a href="#" class="user-link">@Khalil Kabara</a> created this private channel
+          <a href="#" class="user-link">@{{ getChannel.createdBy }}</a> created this private channel
           on March 3rd.
           This is the very beginning of the bugs channel.
-          Description: Bug Findings
+          Description: {{ getChannel.channelDescription }}
         </v-list-item-subtitle>
         <v-list-item-subtitle>
           <v-layout justify-start class=" pa-0 my-2">
@@ -38,8 +38,17 @@
 </template>
 
 <script>
-export default {
+import { mapGetters } from 'vuex';
 
+export default {
+  computed: {
+    ...mapGetters([
+      'getChannels',
+    ]),
+    getChannel() {
+      return this.getChannels.find((channel) => channel.channelId === this.$route.params.channel);
+    },
+  },
 };
 </script>
 
