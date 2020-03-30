@@ -12,6 +12,11 @@ Vue.use(VeeValidate);
 Vue.use(VueAxios, axios);
 Vue.mixin(mixins);
 
+const token = localStorage.getItem('token');
+if (token) {
+  Vue.prototype.$http.defaults.headers.common.Authorization = token;
+}
+
 Vue.config.productionTip = false;
 
 new Vue({
