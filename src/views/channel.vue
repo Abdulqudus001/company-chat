@@ -66,6 +66,10 @@ import emoji from '../emoji';
 
 export default {
   components: { EmojiPicker },
+  mounted() {
+    this.emojis = emoji;
+    this.$store.dispatch('getChannelMessages', this.$route.params.channel);
+  },
   computed: {
     ...mapGetters([
       'getChannels',
@@ -96,9 +100,6 @@ export default {
     showEmoji() {
       this.showEmojiPicker = true;
     },
-  },
-  mounted() {
-    this.emojis = emoji;
   },
 };
 </script>
