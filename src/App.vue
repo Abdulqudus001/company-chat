@@ -66,7 +66,7 @@
           <v-list-item-title
             class="font-weight-bold"
             v-else
-          >#{{ getChannel.channelName.toLowerCase() }}</v-list-item-title>
+          >#{{ getChannel && getChannel.channelName.toLowerCase() }}</v-list-item-title>
           <v-list-item-subtitle>
             <v-layout>
               <v-tooltip bottom>
@@ -193,7 +193,9 @@ export default {
       'getChannels',
     ]),
     getChannel() {
-      return this.getChannels.find((channel) => channel.channelId === this.$route.params.channel);
+      if (this.getChannels) {
+        return this.getChannels.find((channel) => channel.channelId === this.$route.params.channel);
+      } return false;
     },
     theme() {
       return (this.$vuetify.theme.dark) ? 'dark' : 'light';
