@@ -43,18 +43,31 @@
         @hideCard="hideCard"
         @selectEmoji="selectedEmoji"
       />
-      <v-textarea
+      <!-- <v-textarea
         :label="'Message ' + getChannel && getChannel.channelName"
         auto-grow
         rows="4"
         row-height="15"
         outlined
         prepend-inner-icon="mdi-emoticon-happy-outline"
+        append-icon="mdi-send"
         @click:prepend-inner="showEmoji"
+        @click:append-outer=""
         v-model="message"
-      >
-        <p v-html="message"></p>
-      </v-textarea>
+      ></v-textarea> -->
+      <div class="text-field">
+        <v-btn text icon class="prepend" @click.stop.prevent="showEmoji">
+          <v-icon>mdi-emoticon-happy-outline</v-icon>
+        </v-btn>
+        <p
+          class="message"
+          contenteditable="true"
+          :placeholder="`Message ${getChannel && getChannel.channelName}`"
+        ></p>
+        <v-btn text icon class="append">
+          <v-icon>mdi-send</v-icon>
+        </v-btn>
+      </div>
     </v-layout>
   </v-layout>
 </template>
@@ -87,18 +100,34 @@ export default {
   }),
   methods: {
     selectedEmoji(e) {
-      const textarea = document.querySelector('textarea');
-      const start = textarea.selectionStart;
+      const textarea = document.querySelector('.message');
+      textarea.focus();
+      const $range = document.getSelection().getRangeAt(0);
+      const range = $range.cloneRange();
+      range.selectNodeContents(textarea);
+      range.setEnd($range.endContainer, $range.endOffset);
+      const start = range.toString().length;
       this.hideCard();
-      const messageToArr = this.message.split('');
+      const messageToArr = textarea.textContent.split('');
       messageToArr.splice(start, 0, e);
-      this.message = messageToArr.join('');
+      textarea.innerHTML = messageToArr.join('');
+      // Set position of caret
+      this.setCaret(textarea, start);
+    },
+    setCaret(textarea, index) {
+      const range = document.createRange();
+      const selection = document.getSelection();
+      range.setStart(textarea.childNodes[0], index + 1);
+      range.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(range);
+      textarea.focus();
     },
     hideCard() {
       this.showEmojiPicker = false;
     },
     showEmoji() {
-      this.showEmojiPicker = true;
+      this.showEmojiPicker = !this.showEmojiPicker;
     },
   },
 };
@@ -134,6 +163,37 @@ hr {
   bottom: 0;
   padding: 0 !important;
   width: calc(100% - 60px);
+  .text-field {
+    width: 100%;
+    margin: 20px 0;
+    padding: 20px;
+    border: 1px solid;
+    position: relative;
+    border-radius: 5px;
+    max-height: 50vh;
+    overflow-y: auto;
+    p {
+      width: calc(100% - 60px);
+      margin: 0 auto;
+      height: 100%;
+      outline: none;
+      &[contenteditable][placeholder]:empty::before {
+        content: attr(placeholder);
+        opacity: 0.7;
+      }
+    }
+    .prepend,
+    .append {
+      position: absolute;
+      top: 15px;
+    }
+    .prepend {
+      left: 10px;
+    }
+    .append {
+      right: 10px;
+    }
+  }
 }
 
 @media screen and (max-width: 768px){
