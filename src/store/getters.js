@@ -1,5 +1,5 @@
 export default {
-  getChannels(state) {
-    return state.channels;
-  },
+  isLoggedIn: (state) => !!state.token,
+  authStatus: (state) => state.status,
+  getChannels: (state) => state.channels,
 };

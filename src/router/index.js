@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
 import Home from '../views/Home.vue';
+import store from '../store';
 
 Vue.use(VueRouter);
 
@@ -9,6 +10,9 @@ const routes = [
     path: '/',
     name: 'Home',
     component: Home,
+    meta: {
+      requiresAuth: true,
+    },
   },
   {
     path: '/login',
@@ -24,6 +28,9 @@ const routes = [
     path: '/channels/:channel',
     name: 'channel',
     component: () => import('../views/channel.vue'),
+    meta: {
+      requiresAuth: true,
+    },
   },
 ];
 
@@ -33,17 +40,16 @@ const router = new VueRouter({
   routes,
 });
 
-// router.beforeEach((to, from, next) => {
-//   // redirect to login page if not logged in and trying to access a restricted page
-//   const publicPages = ['/login', '/signup'];
-//   const authRequired = !publicPages.includes(to.path);
-//   const loggedIn = localStorage.getItem('user');
-
-//   if (authRequired && !loggedIn) {
-//     return next('/login');
-//   }
-
-//   return next();
-// });
+router.beforeEach((to, from, next) => {
+  if (to.matched.some((record) => record.meta.requiresAuth)) {
+    if (store.getters.isLoggedIn) {
+      next();
+      return;
+    }
+    next('/login');
+  } else {
+    next();
+  }
+});
 
 export default router;

@@ -185,7 +185,6 @@ export default {
     showDialog: false,
   }),
   mounted() {
-    this.axios.defaults.headers.common.Authorization = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFiZHVscXVkdXNhYnViYWtyZUBnbWFpbC5jb20iLCJ1c2VySWQiOiI1ZTgxYWQ5M2ZiNGYxODAwMjRkZjIzN2EiLCJpYXQiOjE1ODU1NTY4ODN9.d_ysYaeAZqk-97F8P4ceihFXljhbxwRignuSGBeMHAo';
     this.$store.dispatch('fetchChannels');
   },
   computed: {
@@ -200,9 +199,19 @@ export default {
     theme() {
       return (this.$vuetify.theme.dark) ? 'dark' : 'light';
     },
+    isLoggedIn() {
+      return this.$store.getters.isLoggedIn;
+    },
   },
   created() {
     this.$vuetify.theme.dark = true;
+  },
+  methods: {
+    logout() {
+      this.$store.dispatch('logout').then(() => {
+        this.$router.push('/login');
+      });
+    },
   },
 };
 </script>

@@ -72,7 +72,12 @@ export default {
   },
   methods: {
     logIn() {
-      this.$router.push('/home');
+      const { email } = this.loginDetails;
+      const { password } = this.loginDetails;
+      this.$store
+        .dispatch('login', { email, password })
+        .then(() => this.$router.push('/'))
+        .catch((err) => console.log(err));
     },
   },
 };
