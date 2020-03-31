@@ -76,7 +76,10 @@ export default {
       const { password } = this.loginDetails;
       this.$store
         .dispatch('login', { email, password })
-        .then(() => this.$router.push('/'))
+        .then(() => {
+          this.$router.push('/');
+          this.$store.dispatch('fetchChannels');
+        })
         .catch((err) => console.log(err));
     },
   },

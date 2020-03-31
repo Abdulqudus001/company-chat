@@ -43,18 +43,6 @@
         @hideCard="hideCard"
         @selectEmoji="selectedEmoji"
       />
-      <!-- <v-textarea
-        :label="'Message ' + getChannel && getChannel.channelName"
-        auto-grow
-        rows="4"
-        row-height="15"
-        outlined
-        prepend-inner-icon="mdi-emoticon-happy-outline"
-        append-icon="mdi-send"
-        @click:prepend-inner="showEmoji"
-        @click:append-outer=""
-        v-model="message"
-      ></v-textarea> -->
       <div class="text-field">
         <v-btn text icon class="prepend" @click.stop.prevent="showEmoji">
           <v-icon>mdi-emoticon-happy-outline</v-icon>
@@ -62,9 +50,10 @@
         <p
           class="message"
           contenteditable="true"
+          @input="keyPressed"
           :placeholder="`Message ${getChannel && getChannel.channelName}`"
         ></p>
-        <v-btn text icon class="append">
+        <v-btn text icon class="append" @click.stop="sendMessage">
           <v-icon>mdi-send</v-icon>
         </v-btn>
       </div>
@@ -82,6 +71,7 @@ export default {
   mounted() {
     this.emojis = emoji;
     this.$store.dispatch('getChannelMessages', this.$route.params.channel);
+    this.newMessage.channelId = this.$route.params.channel;
   },
   computed: {
     ...mapGetters([
@@ -96,28 +86,39 @@ export default {
   data: () => ({
     showEmojiPicker: false,
     emojis: [],
-    message: '',
+    newMessage: {
+      messageContent: '',
+      channelId: '',
+    },
   }),
   methods: {
+    keyPressed(e) {
+      this.newMessage.messageContent = e.target.textContent;
+    },
     selectedEmoji(e) {
       const textarea = document.querySelector('.message');
+      const start = this.getCaret(textarea);
+      this.hideCard();
+      const messageToArr = textarea.textContent.split('');
+      messageToArr.splice(start, 0, e);
+      textarea.innerHTML = messageToArr.join('');
+      this.newMessage.messageContent = messageToArr.join('');
+      // Set position of caret
+      this.setCaret(textarea.childNodes[0], start);
+    },
+    getCaret(textarea) {
       textarea.focus();
       const $range = document.getSelection().getRangeAt(0);
       const range = $range.cloneRange();
       range.selectNodeContents(textarea);
       range.setEnd($range.endContainer, $range.endOffset);
       const start = range.toString().length;
-      this.hideCard();
-      const messageToArr = textarea.textContent.split('');
-      messageToArr.splice(start, 0, e);
-      textarea.innerHTML = messageToArr.join('');
-      // Set position of caret
-      this.setCaret(textarea, start);
+      return start;
     },
     setCaret(textarea, index) {
       const range = document.createRange();
       const selection = document.getSelection();
-      range.setStart(textarea.childNodes[0], index + 1);
+      range.setStart(textarea, index + 1);
       range.collapse(true);
       selection.removeAllRanges();
       selection.addRange(range);
@@ -128,6 +129,12 @@ export default {
     },
     showEmoji() {
       this.showEmojiPicker = !this.showEmojiPicker;
+    },
+    sendMessage() {
+      console.log(this.newMessage);
+      this.axios.post('https://fierce-sierra-17373.herokuapp.com/message/create', this.newMessage).then(() => {
+        this.$store.dispatch('getChannelMessages', this.$route.params.channel);
+      });
     },
   },
 };

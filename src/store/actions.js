@@ -56,8 +56,7 @@ export default {
   },
   getChannelMessages({ commit }, payload) {
     Vue.axios.get(`https://fierce-sierra-17373.herokuapp.com/message/${payload}`).then(({ data }) => {
-      console.log(data);
-      commit('saveChannelMessage');
+      commit('saveChannelMessage', data);
     });
   },
 };

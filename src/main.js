@@ -17,6 +17,8 @@ if (token) {
   Vue.prototype.$http.defaults.headers.common.Authorization = `Bearer ${token}`;
 }
 
+Vue.axios.defaults.withCredentials = false;
+
 Vue.config.productionTip = false;
 
 new Vue({

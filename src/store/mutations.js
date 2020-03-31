@@ -1,3 +1,6 @@
+const formatDate = (date) => new Date(date);
+// const getTime = date => date.toLocaleTimeString();
+const getDay = (date) => date.toDateString();
 export default {
   auth_request(state) {
     state.status = 'loading';
@@ -16,5 +19,16 @@ export default {
   },
   updateChannels(state, payload) {
     state.channels = payload;
+  },
+  saveChannelMessage(state, payload) {
+    const messages = payload.allMessage;
+    if (Array.isArray(messages) && messages.length > 0) {
+      const messageByDay = messages.map((message) => {
+        const day = getDay(formatDate(message.createdAt));
+        const messagesThatDay = messages.find((mes) => getDay(formatDate(mes.createdAt)) === day);
+        return messagesThatDay;
+      });
+      console.log(messageByDay);
+    }
   },
 };
