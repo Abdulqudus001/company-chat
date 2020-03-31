@@ -33,16 +33,17 @@ export default {
         };
       });
       const channelMessageIndex = state.channelMessages.findIndex((ch) => ch.channel === channel);
+      console.log(channelMessageIndex);
       if (channelMessageIndex < 0) {
         state.channelMessages.push({
           channel,
           messageByDay,
         });
       } else {
-        state.channelMessages[channelMessageIndex] = {
+        state.channelMessages.splice(channelMessageIndex, 1, {
           channel,
           messageByDay,
-        };
+        });
       }
     }
   },

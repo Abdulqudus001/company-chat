@@ -1,5 +1,5 @@
 <template>
-  <v-layout column>
+  <v-layout column id="chat-area">
     <v-dialog persistent v-model="showDeleteDialog" max-width="300">
       <v-card color="bars">
         <v-card-title class="headline">Delete this channel?</v-card-title>
@@ -99,32 +99,29 @@
     </v-list-item>
     <hr class="my-3">
     <v-container>
-      <v-list
-        v-for="day in getChannelMessages.messageByDay"
-        :key="day.day"
-        color="background"
-      >
-        <v-list-item
-          v-for="message in day.messagesThatDay"
-          :key="message.messageId"
-          three-line
+      <div v-if="!isObjectEmpty(getChannelMessages)">
+         <v-list
+          v-for="day in getChannelMessages.messageByDay"
+          :key="day.day"
+          color="background"
         >
-          <!-- <v-list-item-avatar>
-            <v-img>
-
-            </v-img>
-          </v-list-item-avatar> -->
-          <v-list-item-content>
-            <v-list-item-title>
-              <v-layout align-center style="padding: 0">
-                <h5>{{ message.postedBy }}</h5>
-                <p class="caption my-0 mx-2">{{ message.createdAt | toTime }}</p>
-              </v-layout>
-            </v-list-item-title>
-            <v-list-item-subtitle>{{ message.messageContent }}</v-list-item-subtitle>
-          </v-list-item-content>
-        </v-list-item>
-      </v-list>
+          <v-list-item
+            v-for="message in day.messagesThatDay"
+            :key="message.messageId"
+            three-line
+          >
+            <v-list-item-content>
+              <v-list-item-title>
+                <v-layout align-center style="padding: 0">
+                  <h5>{{ message.postedBy }}</h5>
+                  <p class="caption my-0 mx-2">{{ message.createdAt | toTime }}</p>
+                </v-layout>
+              </v-list-item-title>
+              <v-list-item-subtitle>{{ message.messageContent }}</v-list-item-subtitle>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
+      </div>
     </v-container>
     <v-footer
       app
@@ -185,8 +182,10 @@ export default {
     this.$store.dispatch('getChannelMessages', this.$route.params.channel);
   },
   updated() {
-    this.$store.dispatch('getChannelMessages', this.$route.params.channel);
     this.newMessage.channelId = this.$route.params.channel;
+    this.$nextTick(() => {
+      this.scrollToView();
+    });
   },
   computed: {
     ...mapGetters([
@@ -214,12 +213,24 @@ export default {
   },
   watch: {
     $route() {
+      this.$store.dispatch('getChannelMessages', this.$route.params.channel);
       const textarea = document.querySelector('.message');
       textarea.textContent = '';
       this.getChannelDetails(this.$route.params.channel);
     },
   },
   methods: {
+    isObjectEmpty(object) {
+      let isEmpty = true;
+      /* eslint-disable-next-line */
+      for (const keys in object) {
+        if (keys) {
+          isEmpty = false;
+          break; // exiting since we found that the object is not empty
+        }
+      }
+      return isEmpty;
+    },
     leaveChannel() {
       console.log('leaving');
     },
@@ -276,15 +287,23 @@ export default {
       this.showEmojiPicker = !this.showEmojiPicker;
     },
     sendMessage() {
-      console.log(this.newMessage);
       this.axios.post('https://fierce-sierra-17373.herokuapp.com/message/create', this.newMessage).then(() => {
         this.$store.dispatch('getChannelMessages', this.$route.params.channel);
+        const textarea = document.querySelector('.message');
+        textarea.textContent = '';
+        this.scrollToView();
       });
     },
     getChannelDetails(channelId) {
       this.axios.get(`users/${channelId}`).then(() => {
         // console.log(res);
       });
+    },
+    scrollToView() {
+      const chatDiv = document.querySelector('#chat-area');
+      if (chatDiv) {
+        this.$vuetify.goTo(chatDiv.scrollHeight + 50);
+      }
     },
   },
 };
