@@ -2,15 +2,14 @@ import Vue from 'vue';
 
 export default {
   fetchChannels({ commit }) {
-    Vue.axios.get('https://fierce-sierra-17373.herokuapp.com/channels').then(({ data }) => {
-      console.log(data);
+    Vue.axios.get('channels').then(({ data }) => {
       commit('updateChannels', data.allChannels);
     });
   },
   login({ commit }, user) {
     return new Promise((resolve, reject) => {
       commit('auth_request');
-      Vue.axios({ url: 'https://fierce-sierra-17373.herokuapp.com/users/login', data: user, method: 'POST' })
+      Vue.axios({ url: 'users/login', data: user, method: 'POST' })
         .then((resp) => {
           const { token } = resp.data;
           const userDetails = resp.data.user;
@@ -30,7 +29,7 @@ export default {
   register({ commit }, user) {
     return new Promise((resolve, reject) => {
       commit('auth_request');
-      Vue.axios({ url: 'https://fierce-sierra-17373.herokuapp.com/users/signup', data: user, method: 'POST' })
+      Vue.axios({ url: 'users/signup', data: user, method: 'POST' })
         .then((resp) => {
           const { token } = resp.data;
           const userDetails = resp.data.user;
@@ -57,9 +56,8 @@ export default {
     });
   },
   getChannelMessages({ commit }, payload) {
-    console.log('object');
-    Vue.axios.get(`https://fierce-sierra-17373.herokuapp.com/message/${payload}`).then(({ data }) => {
-      commit('saveChannelMessage', data);
+    Vue.axios.get(`message/${payload}`).then(({ data }) => {
+      commit('saveChannelMessage', [data, payload]);
     });
   },
 };

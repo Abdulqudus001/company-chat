@@ -20,16 +20,30 @@ export default {
   updateChannels(state, payload) {
     state.channels = payload;
   },
-  saveChannelMessage(state, payload) {
+  saveChannelMessage(state, [payload, channel]) {
     const messages = payload.allMessage;
-    console.log(messages);
     if (Array.isArray(messages) && messages.length > 0) {
-      const messageByDay = messages.map((message) => {
-        const day = getDay(formatDate(message.createdAt));
-        const messagesThatDay = messages.find((mes) => getDay(formatDate(mes.createdAt)) === day);
-        return messagesThatDay;
+      const days = [...new Set(messages.map((message) => getDay(formatDate(message.createdAt))))];
+      const messageByDay = days.map((day) => {
+        const messagesThatDay = messages.filter((mes) => getDay(formatDate(mes.createdAt)) === day)
+          .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+        return {
+          day,
+          messagesThatDay,
+        };
       });
-      console.log(messageByDay);
+      const channelMessageIndex = state.channelMessages.findIndex((ch) => ch.channel === channel);
+      if (channelMessageIndex < 0) {
+        state.channelMessages.push({
+          channel,
+          messageByDay,
+        });
+      } else {
+        state.channelMessages[channelMessageIndex] = {
+          channel,
+          messageByDay,
+        };
+      }
     }
   },
 };

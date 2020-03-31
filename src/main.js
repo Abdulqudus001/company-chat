@@ -18,6 +18,7 @@ if (token) {
 }
 
 Vue.axios.defaults.withCredentials = false;
+Vue.axios.defaults.baseURL = 'https://fierce-sierra-17373.herokuapp.com/';
 
 Vue.config.productionTip = false;
 
