@@ -22,6 +22,7 @@ export default {
   },
   saveChannelMessage(state, payload) {
     const messages = payload.allMessage;
+    console.log(messages);
     if (Array.isArray(messages) && messages.length > 0) {
       const messageByDay = messages.map((message) => {
         const day = getDay(formatDate(message.createdAt));

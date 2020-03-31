@@ -3,8 +3,41 @@
     <v-list-item>
       <v-list-item-content>
         <v-list-item-title class="display-1 font-weight-bold">
-          <v-icon :color="$vuetify.theme.dark ? '#fff' : '#000'">mdi-lock</v-icon>
-          {{ getChannel && getChannel.channelName }}
+          <v-layout justify-space-between wrap style="padding: 20px 0">
+            <span>
+              <v-icon :color="$vuetify.theme.dark ? '#fff' : '#000'">mdi-lock</v-icon>
+              {{ getChannel && getChannel.channelName }}
+            </span>
+            <v-menu nudge-left>
+              <template v-slot:activator="{ on: menu }">
+                <v-btn text icon v-on="{ ...menu }">
+                  <v-icon>mdi-cog-outline</v-icon>
+                </v-btn>
+              </template>
+              <v-list color="bars" rounded>
+                <v-list-item
+                  @click="leaveChannel"
+                  class="px-2"
+                  v-if="!isChannelOwner"
+                >
+                  <v-list-item-icon>
+                    <v-icon>mdi-exit-to-app</v-icon>
+                  </v-list-item-icon>
+                  <v-list-item-title>Leave channel</v-list-item-title>
+                </v-list-item>
+                <v-list-item
+                  @click="deleteChannel"
+                  v-else
+                  class="px-2"
+                >
+                  <v-list-item-icon>
+                    <v-icon>mdi-delete-outline</v-icon>
+                  </v-list-item-icon>
+                  <v-list-item-title>Delete channel</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
+          </v-layout>
         </v-list-item-title>
         <v-list-item-subtitle
           class="subtitle-1 my-3"
@@ -68,21 +101,6 @@ import emoji from '../emoji';
 
 export default {
   components: { EmojiPicker },
-  mounted() {
-    this.emojis = emoji;
-    this.$store.dispatch('getChannelMessages', this.$route.params.channel);
-    this.newMessage.channelId = this.$route.params.channel;
-  },
-  computed: {
-    ...mapGetters([
-      'getChannels',
-    ]),
-    getChannel() {
-      if (this.getChannels) {
-        return this.getChannels.find((channel) => channel.channelId === this.$route.params.channel);
-      } return false;
-    },
-  },
   data: () => ({
     showEmojiPicker: false,
     emojis: [],
@@ -91,7 +109,42 @@ export default {
       channelId: '',
     },
   }),
+  mounted() {
+    this.emojis = emoji;
+  },
+  updated() {
+    this.$store.dispatch('getChannelMessages', this.$route.params.channel);
+    this.newMessage.channelId = this.$route.params.channel;
+  },
+  computed: {
+    ...mapGetters([
+      'getChannels',
+      'getUser',
+    ]),
+    getChannel() {
+      if (this.getChannels) {
+        return this.getChannels.find((channel) => channel.channelId === this.$route.params.channel);
+      } return false;
+    },
+    isChannelOwner() {
+      const channel = this.getChannels.find((ch) => ch.channelId === this.$route.params.channel);
+      const user = JSON.parse(localStorage.getItem('user'));
+      return channel.createdBy === user.fullName;
+    },
+  },
+  watch: {
+    $route() {
+      const textarea = document.querySelector('.message');
+      textarea.textContent = '';
+    },
+  },
   methods: {
+    leaveChannel() {
+      console.log('leaving');
+    },
+    deleteChannel() {
+      console.log('Deleting');
+    },
     keyPressed(e) {
       this.newMessage.messageContent = e.target.textContent;
     },
@@ -122,7 +175,9 @@ export default {
       range.collapse(true);
       selection.removeAllRanges();
       selection.addRange(range);
-      textarea.focus();
+      if (textarea.focus) {
+        textarea.focus();
+      }
     },
     hideCard() {
       this.showEmojiPicker = false;

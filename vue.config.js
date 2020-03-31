@@ -7,10 +7,7 @@ module.exports = {
   devServer: {
     port,
     host,
-    hotOnly: true,
     disableHostCheck: true,
-    clientLogLevel: 'warning',
-    inline: true,
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
