@@ -2,6 +2,7 @@ import Vue from 'vue';
 import axios from 'axios';
 import VueAxios from 'vue-axios';
 import * as VeeValidate from 'vee-validate';
+import vueDebounce from 'vue-debounce';
 import App from './App.vue';
 import router from './router';
 import store from './store';
@@ -9,6 +10,7 @@ import vuetify from './plugins/vuetify';
 import mixins from './mixins/createChannel';
 
 Vue.use(VeeValidate);
+Vue.use(vueDebounce);
 Vue.use(VueAxios, axios);
 Vue.mixin(mixins);
 

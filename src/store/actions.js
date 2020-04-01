@@ -2,7 +2,7 @@ import Vue from 'vue';
 
 export default {
   fetchChannels({ commit }) {
-    Vue.axios.get('channels').then(({ data }) => {
+    Vue.axios.get('channelUsers').then(({ data }) => {
       commit('updateChannels', data.allChannels);
     });
   },
@@ -16,7 +16,7 @@ export default {
           localStorage.setItem('token', token);
           localStorage.setItem('user', JSON.stringify(userDetails));
           Vue.axios.defaults.headers.common.Authorization = `Bearer ${token}`;
-          commit('auth_success', token, userDetails);
+          commit('auth_success', [token, userDetails]);
           resolve(resp);
         })
         .catch((err) => {

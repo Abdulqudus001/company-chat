@@ -5,7 +5,7 @@ export default {
   auth_request(state) {
     state.status = 'loading';
   },
-  auth_success(state, token, user) {
+  auth_success(state, [token, user]) {
     state.status = 'success';
     state.token = token;
     state.user = user;
@@ -33,7 +33,6 @@ export default {
         };
       });
       const channelMessageIndex = state.channelMessages.findIndex((ch) => ch.channel === channel);
-      console.log(channelMessageIndex);
       if (channelMessageIndex < 0) {
         state.channelMessages.push({
           channel,

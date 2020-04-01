@@ -169,6 +169,7 @@ export default {
     },
     showDeleteDialog: false,
     deleting: false,
+    usersInChannel: 0,
   }),
   filters: {
     toTime: (value) => {
@@ -180,6 +181,7 @@ export default {
     this.emojis = emoji;
     this.getChannelDetails(this.$route.params.channel);
     this.$store.dispatch('getChannelMessages', this.$route.params.channel);
+    this.scrollToView();
   },
   updated() {
     this.newMessage.channelId = this.$route.params.channel;
@@ -195,6 +197,7 @@ export default {
     ]),
     getChannel() {
       if (this.getChannels) {
+        /* eslint-disable-next-line */
         return this.getChannels.find((channel) => channel.channelId === this.$route.params.channel);
       } return false;
     },
@@ -207,6 +210,7 @@ export default {
     },
     getChannelMessages() {
       if (this.getChannelMessage.length > 0) {
+        this.scrollToView();
         return this.getChannelMessage.find((ch) => ch.channel === this.$route.params.channel);
       } return [];
     },
@@ -240,7 +244,12 @@ export default {
         this.deleting = false;
         this.showDeleteDialog = false;
         this.$store.dispatch('fetchChannels');
-        this.$router.push({ path: `/channels/${this.getChannels[0].channelId}` });
+        const index = this.getChannels.findIndex((ch) => {
+          const res = ch.channelId === this.$route.params.channel;
+          return res;
+        });
+        this.channelName = '';
+        this.$router.push({ path: `/channels/${this.getChannels[index + 1].channelId}` });
       }).catch(() => {
         this.deleting = false;
         this.showDeleteDialog = false;
@@ -295,8 +304,8 @@ export default {
       });
     },
     getChannelDetails(channelId) {
-      this.axios.get(`users/${channelId}`).then(() => {
-        // console.log(res);
+      this.axios.get(`users/${channelId}`).then(({ data }) => {
+        this.usersInChannel = data.user.length;
       });
     },
     scrollToView() {

@@ -24,7 +24,7 @@
           <v-list-item-icon>
             <v-icon
               color="rgba(255, 255, 255, 0.712)"
-              @click="showDialog = true"
+              @click="showChannelDialog = true"
             >mdi-plus-circle-outline</v-icon>
           </v-list-item-icon>
         </v-list-item>
@@ -88,23 +88,87 @@
                 </span>
               </v-tooltip>
               <v-divider vertical class="mr-3" />
-              <v-tooltip bottom>
-                <template v-slot:activator="{ on }">
-                  <span
-                    @mouseenter="userHovered = true"
-                    @mouseleave="userHovered = false"
-                    class="mr-3"
-                    v-on="on"
-                  >
-                    <v-icon
-                      :color="userHovered ? 'rgb(18, 100, 163)' : ''"
-                      size="18"
-                    >mdi-account-outline</v-icon>
-                    13
-                  </span>
+              <v-menu :close-on-content-click="false">
+                <template v-slot:activator="{ on: menu }">
+                  <v-tooltip bottom>
+                    <template v-slot:activator="{ on:tooltip }">
+                      <span
+                        @mouseenter="userHovered = true"
+                        @mouseleave="userHovered = false"
+                        class="mr-3"
+                      >
+                      <v-btn x-small text icon v-on="{...tooltip, ...menu}">
+                        <v-icon
+                          :color="userHovered ? 'rgb(18, 100, 163)' : ''"
+                          size="18"
+                        >mdi-account-outline</v-icon>
+                      </v-btn>
+                        {{ usersInChannel }}
+                      </span>
+                    </template>
+                    <span>View users</span>
+                  </v-tooltip>
                 </template>
-                <span>View users</span>
-              </v-tooltip>
+                <v-card class="pa-1" color="bars">
+                  <v-card-title>
+                    <v-text-field
+                      dense
+                      rounded
+                      v-model="userSearch"
+                      outlined
+                      v-debounce:2000="findUsers"
+                      placeholder="Search Users"
+                    />
+                  </v-card-title>
+                  <v-card-text>
+                    <v-progress-circular
+                      class="mx-auto"
+                      color="loader"
+                      indeterminate
+                      v-show="showLoading"
+                    />
+                    <v-list color="bars">
+                      <v-list-item
+                        v-show="channelUsers.length > 0"
+                        v-for="user in channelUsers"
+                        :key="user._id"
+                      >
+                        <v-list-item-content>
+                          <v-list-item-title>
+                            <v-layout align-center justify-space-between>
+                              {{ user.fullName }}
+                              <v-btn
+                                class="ml-2"
+                                text
+                                icon
+                              >
+                                <v-icon>mdi-delete-outline</v-icon>
+                              </v-btn>
+                            </v-layout>
+                          </v-list-item-title>
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item v-for="user in users" :key="user._id">
+                        <v-list-item-content>
+                          <v-list-item-title>
+                            <v-layout justify-space-between align-center>
+                              {{ user.fullName }}
+                              <v-btn
+                                class="ml-2"
+                                text
+                                icon
+                                @click="addUserToChannel(user._id)"
+                              >
+                                <v-icon>mdi-plus</v-icon>
+                              </v-btn>
+                            </v-layout>
+                          </v-list-item-title>
+                        </v-list-item-content>
+                      </v-list-item>
+                    </v-list>
+                  </v-card-text>
+                </v-card>
+              </v-menu>
               <v-divider vertical class="mr-3" />
               <v-tooltip bottom>
                 <template v-slot:activator="{ on }">
@@ -142,7 +206,7 @@
       </v-tooltip>
     </v-app-bar>
     <v-content>
-      <new-channel @closeDialog="showDialog = false" :showDialog="showDialog" />
+      <new-channel @closeDialog="showChannelDialog = false" :showDialog="showChannelDialog" />
       <router-view />
     </v-content>
   </v-app>
@@ -160,32 +224,23 @@ export default {
     starClicked: false,
     userHovered: false,
     pinHovered: false,
-    navItems: [
-      {
-        name: 'announcement',
-        type: 'private',
-        link: '/channels/announcement',
-      },
-      {
-        name: 'random',
-        type: 'public',
-        link: '/channels/random',
-      },
-      {
-        name: 'software-development',
-        type: 'private',
-        link: '/channels/software-development',
-      },
-      {
-        name: 'polls',
-        type: 'public',
-        link: '/channels/polls',
-      },
-    ],
-    showDialog: false,
+    showChannelDialog: false,
+    usersInChannel: 0,
+    userSearch: '',
+    showLoading: false,
+    users: '',
+    channelUsers: [],
   }),
   mounted() {
     this.$store.dispatch('fetchChannels');
+    if (this.$route.params.channel) {
+      this.getChannelUsers(this.$route.params.channel);
+    }
+  },
+  watch: {
+    $route() {
+      this.getChannelUsers(this.$route.params.channel);
+    },
   },
   computed: {
     ...mapGetters([
@@ -207,6 +262,37 @@ export default {
     this.$vuetify.theme.dark = true;
   },
   methods: {
+    isUserInChannel(user) {
+      const index = this.channelUsers.findIndex((usr) => user === usr.fullName);
+      return index > -1;
+    },
+    findUsers() {
+      this.showLoading = true;
+      this.axios.get(`/users/search/${this.userSearch}`).then(({ data }) => {
+        this.showLoading = false;
+        this.users = data.user.filter((user) => {
+          const index = this.channelUsers.findIndex((el) => el.fullName === user.fullName);
+          return index < 0;
+        });
+      });
+    },
+    addUserToChannel(userId) {
+      const body = {
+        userid: [userId],
+      };
+      this.axios.post(`channelUsers/${this.$route.params.channel}`, body).then((res) => {
+        this.getChannelUsers(res.data.channelid);
+      });
+    },
+    getChannelUsers(channelId) {
+      this.axios.get('channelUsers/').then(({ data }) => {
+        console.log(data);
+      });
+      this.axios.get(`channelUsers/${channelId}`).then(({ data }) => {
+        this.channelUsers = data.allChannelUsers;
+        this.usersInChannel = data.allChannelUsers.length;
+      });
+    },
     logout() {
       this.$store.dispatch('logout').then(() => {
         this.$router.push('/login');

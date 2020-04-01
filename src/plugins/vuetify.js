@@ -12,6 +12,7 @@ export default new Vuetify({
         text: '#f2f2ff',
         background: '#41608c',
         sidebar: '#1d3557',
+        loader: '#fff',
       },
       light: {
         button: '#1d3557',
@@ -19,6 +20,7 @@ export default new Vuetify({
         background: '#fff',
         text: '#1d3557',
         sidebar: '#1d3557',
+        loader: '#1d3557',
       },
     },
   },
