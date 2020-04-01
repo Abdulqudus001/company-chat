@@ -131,19 +131,21 @@
                       <v-list-item
                         v-show="channelUsers.length > 0"
                         v-for="user in channelUsers"
-                        :key="user._id"
+                        :key="user.userId"
                       >
                         <v-list-item-content>
                           <v-list-item-title>
                             <v-layout align-center justify-space-between>
                               {{ user.fullName }}
-                              <v-btn
+                              <!-- <v-btn
                                 class="ml-2"
                                 text
                                 icon
+                                v-if="getUser.fullName !== user.fullName"
+                                @click="leaveChannel(user.userId)"
                               >
                                 <v-icon>mdi-delete-outline</v-icon>
-                              </v-btn>
+                              </v-btn> -->
                             </v-layout>
                           </v-list-item-title>
                         </v-list-item-content>
@@ -251,6 +253,10 @@ export default {
         return this.getChannels.find((channel) => channel.channelId === this.$route.params.channel);
       } return false;
     },
+    getUser() {
+      const user = JSON.parse(this.$store.getters.getUser);
+      return user;
+    },
     theme() {
       return (this.$vuetify.theme.dark) ? 'dark' : 'light';
     },
@@ -276,18 +282,26 @@ export default {
         });
       });
     },
+    leaveChannel(id) {
+      console.log(id);
+      const body = {
+        /* eslint-disable-next-line */
+        userId: id,
+      };
+      this.axios.delete(`/channelUsers/${this.$route.params.channel}`, body).then(() => {
+        this.getChannelUsers(this.$route.params.channel);
+      });
+    },
     addUserToChannel(userId) {
       const body = {
         userid: [userId],
       };
       this.axios.post(`channelUsers/${this.$route.params.channel}`, body).then((res) => {
         this.getChannelUsers(res.data.channelid);
+        this.findUsers();
       });
     },
     getChannelUsers(channelId) {
-      this.axios.get('channelUsers/').then(({ data }) => {
-        console.log(data);
-      });
       this.axios.get(`channelUsers/${channelId}`).then(({ data }) => {
         this.channelUsers = data.allChannelUsers;
         this.usersInChannel = data.allChannelUsers.length;

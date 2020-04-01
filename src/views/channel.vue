@@ -236,7 +236,19 @@ export default {
       return isEmpty;
     },
     leaveChannel() {
-      console.log('leaving');
+      const body = {
+        /* eslint-disable-next-line */
+        userId: JSON.parse(this.$store.getters.getUser)._id,
+      };
+      this.axios.delete(`/channelUsers/${this.$route.params.channel}`, body).then(() => {
+        this.$store.dispatch('fetchChannels');
+        const index = this.getChannels.findIndex((ch) => {
+          const result = ch.channelId === this.$route.params.channel;
+          return result;
+        });
+        this.channelName = '';
+        this.$router.push({ path: `/channels/${this.getChannels[index + 1].channelId}` });
+      });
     },
     deleteChannel() {
       this.deleting = true;

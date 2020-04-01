@@ -1,3 +1,5 @@
+import Vue from 'vue';
+
 const formatDate = (date) => new Date(date);
 // const getTime = date => date.toLocaleTimeString();
 const getDay = (date) => date.toDateString();
@@ -18,6 +20,9 @@ export default {
     state.token = '';
   },
   updateChannels(state, payload) {
+    if (payload.length < 1) {
+      Vue.$router.push({ path: '/' });
+    }
     state.channels = payload;
   },
   saveChannelMessage(state, [payload, channel]) {
