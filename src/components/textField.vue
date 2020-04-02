@@ -11,10 +11,10 @@
         <v-icon>mdi-emoticon-happy-outline</v-icon>
       </v-btn>
       <p
-        class="message"
+        :class="isThread ? 'thread' : 'message'"
         contenteditable="true"
         @input="keyPressed"
-        :placeholder="`Message ${getChannel && getChannel.channelName}`"
+        :placeholder="!isThread ? `Message ${getChannel && getChannel.channelName}` : 'Message'"
       ></p>
       <v-btn
         text
@@ -38,6 +38,10 @@ export default {
   components: { EmojiPicker },
   props: {
     sendingMessage: {
+      type: Boolean,
+      default: false,
+    },
+    isThread: {
       type: Boolean,
       default: false,
     },
@@ -66,7 +70,8 @@ export default {
       this.message = e.target.textContent;
     },
     selectedEmoji(e) {
-      const textarea = document.querySelector('.message');
+      const className = this.isThread ? 'thread' : 'message';
+      const textarea = document.querySelector(`.${className}`);
       const start = this.getCaret(textarea);
       this.hideCard();
       const messageToArr = textarea.textContent.split('');

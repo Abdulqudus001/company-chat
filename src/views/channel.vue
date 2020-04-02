@@ -99,6 +99,13 @@
     </v-list-item>
     <hr class="my-3">
     <v-container>
+      <emoji-picker
+        v-show="showEmojiPicker"
+        :emojis="emojis"
+        @hideCard="hideCard"
+        @selectEmoji="selectedEmoji"
+        :isVisible="showEmojiPicker"
+      />
       <div v-if="!isObjectEmpty(getChannelMessages)">
          <v-list
           v-for="day in getChannelMessages.messageByDay"
@@ -119,7 +126,7 @@
             <v-list-item-content>
               <v-list-item-title>
                 <v-layout align-center style="padding: 0">
-                  <h5>{{ message.postedBy }}</h5>
+                  <h5>{{ message.postedBy.fullName }}</h5>
                   <p class="caption my-0 mx-2">{{ message.createdAt | toTime }}</p>
                 </v-layout>
               </v-list-item-title>
@@ -127,12 +134,21 @@
             </v-list-item-content>
             <div class="actions" v-if="message.messageId === hovered">
               <v-layout justify-space-between>
+                <v-badge
+                  :content="getCount(message.channelMessageReaction) || 0"
+                  offset-x="15"
+                  offset-y="10"
+                >
+                  <v-btn icon @click="showEmoji(message.messageId)" class="show-emoji">
+                    <v-icon class="show-emoji">mdi-emoticon-happy-outline</v-icon>
+                  </v-btn>
+                </v-badge>
                 <v-btn icon @click="addThread(message)">
                   <v-icon>mdi-chat-outline</v-icon>
                 </v-btn>
                 <v-btn
                   icon
-                  v-show="message.postedBy === JSON.parse(getUser).fullName"
+                  v-show="message.postedBy.fullName === JSON.parse(getUser).fullName"
                   @click="deleteMessage(message.messageId)"
                   :loading="isDeleting"
                 >
@@ -143,13 +159,40 @@
           </v-list-item>
         </v-list>
       </div>
-    <v-navigation-drawer right :value="showThread" app color="background" width="320">
+    <v-navigation-drawer
+      right
+      :value="showThread"
+      app
+      color="background"
+      width="320"
+    >
       <v-layout justify-end>
         <v-btn icon text @click="showThread = false">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-layout>
-
+      <v-list id="thread-area">
+        <div
+          v-for="thread in threadMessages"
+          :key="thread.conversationId"
+          three-line
+        >
+          <v-list-item
+            class="px-4"
+          >
+            <v-list-item-content>
+              <v-list-item-title>
+                <h5>{{ thread.postedBy.fullname }}</h5>
+              </v-list-item-title>
+              <v-list-item-subtitle>{{ thread.conversationMessage }}</v-list-item-subtitle>
+            </v-list-item-content>
+          </v-list-item>
+          <v-divider />
+        </div>
+      </v-list>
+      <v-footer color="background" absolute>
+        <text-field :sendingMessage="sendingConvo" @sendMessage="sendConvo" :isThread="true"/>
+      </v-footer>
     </v-navigation-drawer>
     </v-container>
     <v-footer
@@ -164,11 +207,12 @@
 
 <script>
 import { mapGetters } from 'vuex';
-import emoji from '../emoji';
+import EmojiPicker from '@/components/emoji.vue';
 import TextField from '../components/textField.vue';
+import emoji from '../emoji';
 
 export default {
-  components: { TextField },
+  components: { EmojiPicker, TextField },
   data: () => ({
     showEmojiPicker: false,
     channelName: '',
@@ -184,6 +228,9 @@ export default {
     hovered: '',
     showThread: false,
     isDeleting: false,
+    sendingConvo: false,
+    currentMessageId: '',
+    threadMessages: '',
   }),
   filters: {
     toTime: (value) => {
@@ -195,7 +242,7 @@ export default {
     this.emojis = emoji;
     this.getChannelDetails(this.$route.params.channel);
     this.$store.dispatch('getChannelMessages', this.$route.params.channel);
-    this.scrollToView();
+    this.scrollToView('chat-area');
   },
   updated() {
     this.newMessage.channelId = this.$route.params.channel;
@@ -221,7 +268,7 @@ export default {
     },
     getChannelMessages() {
       if (this.getChannelMessage.length > 0) {
-        this.scrollToView();
+        this.scrollToView('chat-area');
         return this.getChannelMessage.find((ch) => ch.channel === this.$route.params.channel);
       } return [];
     },
@@ -235,6 +282,13 @@ export default {
     },
   },
   methods: {
+    getCount(reactions) {
+      const filtered = reactions.filter((item, index, arr) => {
+        const elementIndex = arr.findIndex((el) => el.userInformation === item.userInformation);
+        return elementIndex === index;
+      });
+      return filtered.length || 0;
+    },
     isObjectEmpty(object) {
       let isEmpty = true;
       /* eslint-disable-next-line */
@@ -251,15 +305,18 @@ export default {
         this.axios.patch(`message/${messageId}`).then(() => {
           this.$store.dispatch('getChannelMessages', this.$route.params.channel);
           this.showThread = true;
+          this.currentMessageId = messageId;
         });
       } else {
         this.fetchThreadMessages(messageId);
         this.showThread = true;
+        this.currentMessageId = messageId;
       }
     },
     fetchThreadMessages(id) {
       this.axios.get(`messageConversation/${id}`).then(({ data }) => {
         console.log(data);
+        this.threadMessages = data.allMessage;
       });
     },
     leaveChannel() {
@@ -294,45 +351,21 @@ export default {
         this.showDeleteDialog = false;
       });
     },
-    keyPressed(e) {
-      this.newMessage.messageContent = e.target.textContent;
-    },
     selectedEmoji(e) {
-      const textarea = document.querySelector('.message');
-      const start = this.getCaret(textarea);
       this.hideCard();
-      const messageToArr = textarea.textContent.split('');
-      messageToArr.splice(start, 0, e);
-      textarea.innerHTML = messageToArr.join('');
-      this.newMessage.messageContent = messageToArr.join('');
-      // Set position of caret
-      this.setCaret(textarea.childNodes[0], start);
-    },
-    getCaret(textarea) {
-      textarea.focus();
-      const $range = document.getSelection().getRangeAt(0);
-      const range = $range.cloneRange();
-      range.selectNodeContents(textarea);
-      range.setEnd($range.endContainer, $range.endOffset);
-      const start = range.toString().length;
-      return start;
-    },
-    setCaret(textarea, index) {
-      const range = document.createRange();
-      const selection = document.getSelection();
-      range.setStart(textarea, index + 1);
-      range.collapse(true);
-      selection.removeAllRanges();
-      selection.addRange(range);
-      if (textarea.focus) {
-        textarea.focus();
-      }
+      const body = {
+        reactionContent: e,
+      };
+      this.axios.patch(`message/react/${this.currentMessageId}`, body).then(() => {
+        this.$store.dispatch('getChannelMessages', this.$route.params.channel);
+      });
     },
     hideCard() {
       this.showEmojiPicker = false;
     },
-    showEmoji() {
-      this.showEmojiPicker = !this.showEmojiPicker;
+    showEmoji(id) {
+      this.currentMessageId = id;
+      this.showEmojiPicker = true;
     },
     sendMessage(e) {
       this.sendingMessage = true;
@@ -340,14 +373,30 @@ export default {
         messageContent: e,
         channelId: this.$route.params.channel,
       };
-      this.axios.post('https://fierce-sierra-17373.herokuapp.com/message/create', body).then(() => {
+      this.axios.post('message/create', body).then(() => {
         this.sendingMessage = false;
         this.$store.dispatch('getChannelMessages', this.$route.params.channel);
         const textarea = document.querySelector('.message');
         textarea.textContent = '';
-        this.scrollToView();
+        this.scrollToView('chat-area');
       }).catch(() => {
         this.sendingMessage = false;
+      });
+    },
+    sendConvo(e) {
+      this.sendingConvo = true;
+      const body = {
+        conversationMessage: e,
+        messageId: this.currentMessageId,
+      };
+      this.axios.post('messageConversation/create', body).then(() => {
+        this.sendingConvo = false;
+        this.fetchThreadMessages(this.currentMessageId);
+        const textarea = document.querySelector('.thread');
+        textarea.textContent = '';
+        this.scrollToView('thread-area');
+      }).catch(() => {
+        this.sendingConvo = false;
       });
     },
     deleteMessage(id) {
@@ -364,8 +413,8 @@ export default {
         this.usersInChannel = data.user.length;
       });
     },
-    scrollToView() {
-      const chatDiv = document.querySelector('#chat-area');
+    scrollToView(id) {
+      const chatDiv = document.querySelector(`#${id}`);
       if (chatDiv) {
         this.$vuetify.goTo(chatDiv.scrollHeight + 50);
       }

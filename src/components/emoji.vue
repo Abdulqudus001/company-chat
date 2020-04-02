@@ -53,14 +53,16 @@ export default {
   methods: {
     hideCard(e) {
       e.preventDefault();
-      const path = [...e.path];
-      const isCard = path.some((el) => {
-        if (el.classList) {
-          return el.classList.contains('v-card__text') || el.classList.contains('emoji-picker');
-        } return false;
-      });
-      if (!isCard) {
-        this.vue.$emit('hideCard');
+      if (!e.target.classList.contains('show-emoji')) {
+        const path = [...e.path];
+        const isCard = path.some((el) => {
+          if (el.classList) {
+            return el.classList.contains('v-card__text') || el.classList.contains('emoji-picker');
+          } return false;
+        });
+        if (!isCard) {
+          this.vue.$emit('hideCard');
+        }
       }
     },
   },
