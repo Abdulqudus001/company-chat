@@ -105,10 +105,16 @@
           :key="day.day"
           color="background"
         >
+          <v-banner single-line elevation="0" sticky color="background">
+            {{ day.day }}
+          </v-banner>
           <v-list-item
             v-for="message in day.messagesThatDay"
             :key="message.messageId"
             three-line
+            @mouseenter="hovered = message.messageId"
+            @mouseleave="hovered = ''"
+            link
           >
             <v-list-item-content>
               <v-list-item-title>
@@ -119,46 +125,50 @@
               </v-list-item-title>
               <v-list-item-subtitle>{{ message.messageContent }}</v-list-item-subtitle>
             </v-list-item-content>
+            <div class="actions" v-if="message.messageId === hovered">
+              <v-layout justify-space-between>
+                <v-btn icon @click="addThread(message)">
+                  <v-icon>mdi-chat-outline</v-icon>
+                </v-btn>
+                <v-btn
+                  icon
+                  v-show="message.postedBy === JSON.parse(getUser).fullName"
+                  @click="deleteMessage(message.messageId)"
+                  :loading="isDeleting"
+                >
+                  <v-icon>mdi-delete-outline</v-icon>
+                </v-btn>
+              </v-layout>
+            </div>
           </v-list-item>
         </v-list>
       </div>
+    <v-navigation-drawer right :value="showThread" app color="background" width="320">
+      <v-layout justify-end>
+        <v-btn icon text @click="showThread = false">
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </v-layout>
+
+    </v-navigation-drawer>
     </v-container>
     <v-footer
       app
       inset
       color="background"
     >
-      <emoji-picker
-        v-show="showEmojiPicker"
-        :emojis="emojis"
-        @hideCard="hideCard"
-        @selectEmoji="selectedEmoji"
-      />
-      <div class="text-field">
-        <v-btn text icon class="prepend" @click.stop.prevent="showEmoji">
-          <v-icon>mdi-emoticon-happy-outline</v-icon>
-        </v-btn>
-        <p
-          class="message"
-          contenteditable="true"
-          @input="keyPressed"
-          :placeholder="`Message ${getChannel && getChannel.channelName}`"
-        ></p>
-        <v-btn text icon class="append" @click.stop="sendMessage">
-          <v-icon>mdi-send</v-icon>
-        </v-btn>
-      </div>
+      <text-field :sendingMessage="sendingMessage" @sendMessage="sendMessage"/>
     </v-footer>
   </v-layout>
 </template>
 
 <script>
 import { mapGetters } from 'vuex';
-import EmojiPicker from '@/components/emoji.vue';
 import emoji from '../emoji';
+import TextField from '../components/textField.vue';
 
 export default {
-  components: { EmojiPicker },
+  components: { TextField },
   data: () => ({
     showEmojiPicker: false,
     channelName: '',
@@ -170,6 +180,10 @@ export default {
     showDeleteDialog: false,
     deleting: false,
     usersInChannel: 0,
+    sendingMessage: false,
+    hovered: '',
+    showThread: false,
+    isDeleting: false,
   }),
   filters: {
     toTime: (value) => {
@@ -185,9 +199,6 @@ export default {
   },
   updated() {
     this.newMessage.channelId = this.$route.params.channel;
-    this.$nextTick(() => {
-      this.scrollToView();
-    });
   },
   computed: {
     ...mapGetters([
@@ -234,6 +245,22 @@ export default {
         }
       }
       return isEmpty;
+    },
+    addThread({ isThread, messageId }) {
+      if (!isThread) {
+        this.axios.patch(`message/${messageId}`).then(() => {
+          this.$store.dispatch('getChannelMessages', this.$route.params.channel);
+          this.showThread = true;
+        });
+      } else {
+        this.fetchThreadMessages(messageId);
+        this.showThread = true;
+      }
+    },
+    fetchThreadMessages(id) {
+      this.axios.get(`messageConversation/${id}`).then(({ data }) => {
+        console.log(data);
+      });
     },
     leaveChannel() {
       const body = {
@@ -307,12 +334,29 @@ export default {
     showEmoji() {
       this.showEmojiPicker = !this.showEmojiPicker;
     },
-    sendMessage() {
-      this.axios.post('https://fierce-sierra-17373.herokuapp.com/message/create', this.newMessage).then(() => {
+    sendMessage(e) {
+      this.sendingMessage = true;
+      const body = {
+        messageContent: e,
+        channelId: this.$route.params.channel,
+      };
+      this.axios.post('https://fierce-sierra-17373.herokuapp.com/message/create', body).then(() => {
+        this.sendingMessage = false;
         this.$store.dispatch('getChannelMessages', this.$route.params.channel);
         const textarea = document.querySelector('.message');
         textarea.textContent = '';
         this.scrollToView();
+      }).catch(() => {
+        this.sendingMessage = false;
+      });
+    },
+    deleteMessage(id) {
+      this.isDeleting = true;
+      this.axios.delete(`message/${id}`).then(() => {
+        this.isDeleting = false;
+        this.$store.dispatch('getChannelMessages', this.$route.params.channel);
+      }).catch(() => {
+        this.isDeleting = false;
       });
     },
     getChannelDetails(channelId) {
