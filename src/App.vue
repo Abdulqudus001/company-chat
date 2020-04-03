@@ -255,22 +255,25 @@ export default {
     if (this.$route.params.channel) {
       this.getChannelUsers(this.$route.params.channel);
     }
+    if (localStorage.getItem('newMessages')) {
+      this.channelsWithNewMessages = localStorage.getItem('newMessages');
+    }
   },
   sockets: {
     addedToChannel() {
       this.$store.dispatch('fetchChannels');
-      // if (this.getChannels) {
-      //   if ()
-      // }
     },
   },
   watch: {
     $route() {
       this.getChannelUsers(this.$route.params.channel);
-      if (this.channelsWithNewMessages.includes(this.$route.params.channel)) {
-        this.channelsWithNewMessages = this.channelsWithNewMessages.filter((el) => (
-          el !== this.$route.params.channel
-        ));
+      if (this.channelsWithNewMessages.length > 0) {
+        if (this.channelsWithNewMessages.includes(this.$route.params.channel)) {
+          this.channelsWithNewMessages = this.channelsWithNewMessages.filter((el) => (
+            el !== this.$route.params.channel
+          ));
+          localStorage.setItem('newMessages', this.channelsWithNewMessages);
+        }
       }
     },
     getChannels(val) {
@@ -363,6 +366,7 @@ export default {
     },
     fetchNewMessages(id) {
       this.channelsWithNewMessages.push(id);
+      localStorage.setItem('newMessages', this.channelsWithNewMessages);
       this.$store.dispatch('getChannelMessages', id);
     },
   },

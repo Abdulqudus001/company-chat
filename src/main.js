@@ -14,7 +14,6 @@ Vue.use(VeeValidate);
 Vue.use(vueDebounce);
 Vue.use(VueAxios, axios);
 Vue.use(new VueSocketIO({
-  debug: true,
   connection: 'https://fierce-sierra-17373.herokuapp.com/',
 }));
 Vue.mixin(mixins);
