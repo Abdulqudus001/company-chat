@@ -1,6 +1,7 @@
 <template>
   <v-app :style="{background: $vuetify.theme.themes[theme].background}">
     <v-navigation-drawer
+      v-model="showDrawer"
       v-if="$route.name !== 'login' && $route.name !== 'signup'"
       color="sidebar"
       app
@@ -57,6 +58,9 @@
       elevation="1"
       color="bars"
     >
+      <v-btn icon text @click="showDrawer = !showDrawer">
+        <v-icon>mdi-menu</v-icon>
+      </v-btn>
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title
@@ -232,6 +236,7 @@ export default {
     showLoading: false,
     users: '',
     channelUsers: [],
+    showDrawer: true,
   }),
   mounted() {
     this.$store.dispatch('fetchChannels');
