@@ -243,6 +243,11 @@ export default {
     $route() {
       this.getChannelUsers(this.$route.params.channel);
     },
+    getChannels(val) {
+      if (val.length > 0) {
+        this.$router.push({ path: `/channels/${val[0].channelId}` });
+      }
+    },
   },
   computed: {
     ...mapGetters([
