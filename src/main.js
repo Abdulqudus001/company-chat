@@ -3,6 +3,7 @@ import axios from 'axios';
 import VueAxios from 'vue-axios';
 import * as VeeValidate from 'vee-validate';
 import vueDebounce from 'vue-debounce';
+import VueSocketIO from 'vue-socket.io';
 import App from './App.vue';
 import router from './router';
 import store from './store';
@@ -12,6 +13,10 @@ import mixins from './mixins/createChannel';
 Vue.use(VeeValidate);
 Vue.use(vueDebounce);
 Vue.use(VueAxios, axios);
+Vue.use(new VueSocketIO({
+  debug: true,
+  connection: 'https://fierce-sierra-17373.herokuapp.com/',
+}));
 Vue.mixin(mixins);
 
 const token = localStorage.getItem('token');

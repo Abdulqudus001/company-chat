@@ -35,16 +35,26 @@
           :to="'/channels/' + item.channelId"
         >
           <v-list-item-icon>
-            <v-icon
-              size="18"
-              color="rgba(255, 255, 255, 0.712)"
+            <v-badge
+              dot
               v-if="item.channelPrivate"
-            >mdi-lock</v-icon>
-            <v-icon
-              size="18"
-              color="rgba(255, 255, 255, 0.712)"
+              :value="showNotification(item.channelId)"
+            >
+              <v-icon
+                size="18"
+                color="rgba(255, 255, 255, 0.712)"
+              >mdi-lock</v-icon>
+            </v-badge>
+            <v-badge
+              dot
               v-else
-            >mdi-pound</v-icon>
+              :value="showNotification(item.channelId)"
+            >
+              <v-icon
+                size="18"
+                color="rgba(255, 255, 255, 0.712)"
+              >mdi-pound</v-icon>
+            </v-badge>
           </v-list-item-icon>
           <v-list-item-content>
             <v-list-item-subtitle>{{ item.channelName }}</v-list-item-subtitle>
@@ -237,6 +247,8 @@ export default {
     users: '',
     channelUsers: [],
     showDrawer: true,
+    newMessageInChannel: '',
+    channelsWithNewMessages: [],
   }),
   mounted() {
     this.$store.dispatch('fetchChannels');
@@ -244,13 +256,29 @@ export default {
       this.getChannelUsers(this.$route.params.channel);
     }
   },
+  sockets: {
+    addedToChannel() {
+      this.$store.dispatch('fetchChannels');
+      // if (this.getChannels) {
+      //   if ()
+      // }
+    },
+  },
   watch: {
     $route() {
       this.getChannelUsers(this.$route.params.channel);
+      if (this.channelsWithNewMessages.includes(this.$route.params.channel)) {
+        this.channelsWithNewMessages = this.channelsWithNewMessages.filter((el) => (
+          el !== this.$route.params.channel
+        ));
+      }
     },
     getChannels(val) {
       if (val.length > 0) {
-        this.$router.push({ path: `/channels/${val[0].channelId}` });
+        this.loadUserChannel(this.getChannels);
+        if (!this.$route.params.channel) {
+          this.$router.push({ path: `/channels/${val[0].channelId}` });
+        }
       }
     },
   },
@@ -278,6 +306,11 @@ export default {
     this.$vuetify.theme.dark = true;
   },
   methods: {
+    showNotification(id) {
+      if (this.$route.params.channel && this.$route.params.channel !== id) {
+        return this.channelsWithNewMessages.includes(id);
+      } return null;
+    },
     isUserInChannel(user) {
       const index = this.channelUsers.findIndex((usr) => user === usr.fullName);
       return index > -1;
@@ -320,6 +353,17 @@ export default {
       this.$store.dispatch('logout').then(() => {
         this.$router.push('/login');
       });
+    },
+    loadUserChannel(channels) {
+      channels.forEach((channel) => {
+        this.sockets.subscribe(channel.channelId, (data) => {
+          this.fetchNewMessages(data.channelInfo);
+        });
+      });
+    },
+    fetchNewMessages(id) {
+      this.channelsWithNewMessages.push(id);
+      this.$store.dispatch('getChannelMessages', id);
     },
   },
 };

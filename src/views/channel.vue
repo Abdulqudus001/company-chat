@@ -367,6 +367,7 @@ export default {
       this.showEmojiPicker = true;
     },
     sendMessage(e) {
+      this.$socket.emit('chat-message', e);
       this.sendingMessage = true;
       const body = {
         messageContent: e,
