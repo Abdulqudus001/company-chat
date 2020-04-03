@@ -283,7 +283,6 @@ export default {
       });
     },
     leaveChannel(id) {
-      console.log(id);
       const body = {
         /* eslint-disable-next-line */
         userId: id,

@@ -12,7 +12,6 @@ export default {
         this.channelDetails.channelPrivate = '';
         /* eslint-disable-next-line */
         this.$emit('closeDialog');
-        console.log(res.data);
         this.$router.push({ path: `/channels/${res.data.channelid}` });
       }).catch(() => {
         this.loading = false;

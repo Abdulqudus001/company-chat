@@ -79,8 +79,7 @@ export default {
         .then(() => {
           this.$router.push('/');
           this.$store.dispatch('fetchChannels');
-        })
-        .catch((err) => console.log(err));
+        });
     },
   },
 };

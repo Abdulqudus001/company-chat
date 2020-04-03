@@ -95,8 +95,7 @@ export default {
       };
       this.$store
         .dispatch('register', data)
-        .then(() => this.$router.push('/'))
-        .catch((err) => console.log(err));
+        .then(() => this.$router.push('/'));
     },
   },
 };

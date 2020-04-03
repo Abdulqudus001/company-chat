@@ -315,7 +315,6 @@ export default {
     },
     fetchThreadMessages(id) {
       this.axios.get(`messageConversation/${id}`).then(({ data }) => {
-        console.log(data);
         this.threadMessages = data.allMessage;
       });
     },
